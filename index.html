@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape: Apagón en la escuela</title>
+<style>
+  :root { --bg:#0e1621; --card:#17222f; --ink:#eef3f7; --muted:#9fb0c0; --line:#2a3a4b;
+    --sol:#f5b331; --sol2:#ffd877; --ok:#3ecf8e; --bad:#ff6b6b; --cyan:#5cc8e0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:radial-gradient(1200px 600px at 50% -200px,#1b2a3b,var(--bg)); color:var(--ink);
+    font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; min-height:100vh; }
+  .wrap { max-width:760px; margin:0 auto; padding:18px 16px 60px; }
+  header { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .brand { font-weight:800; letter-spacing:.5px; color:var(--sol); }
+  .hud { display:flex; gap:8px; flex-wrap:wrap; }
+  .pill { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:.9rem;
+    font-variant-numeric:tabular-nums; }
+  .pill b { color:var(--sol2); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:14px; }
+  h1 { font-size:1.9rem; margin:4px 0 6px; line-height:1.15; }
+  h2 { font-size:1.3rem; margin:0 0 8px; color:var(--sol2); }
+  .muted { color:var(--muted); }
+  .bat { display:flex; gap:6px; margin:6px 0 16px; }
+  .bat span { flex:1; height:14px; border-radius:4px; background:#24313f; border:1px solid var(--line); transition:.4s; }
+  .bat span.on { background:linear-gradient(90deg,var(--sol),var(--sol2)); box-shadow:0 0 12px #f5b33166; border-color:var(--sol); }
+  .code { font-family:ui-monospace,Consolas,monospace; font-size:1.5rem; letter-spacing:4px; background:#0b121b;
+    border:1px dashed var(--line); border-radius:10px; padding:12px; text-align:center; color:var(--cyan); margin:10px 0; word-break:break-word; }
+  input[type=text] { width:100%; font:inherit; font-size:1.2rem; color:var(--ink); background:#0b121b; border:2px solid var(--line);
+    border-radius:12px; padding:12px 14px; text-transform:uppercase; }
+  input[type=text]:focus { outline:none; border-color:var(--sol); }
+  .row { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  button { font:inherit; font-weight:700; border:0; border-radius:12px; padding:12px 18px; cursor:pointer; }
+  .go { background:var(--sol); color:#1a1200; flex:1; }
+  .hint { background:transparent; color:var(--cyan); border:1px solid var(--cyan); }
+  .msg { margin-top:10px; min-height:1.5em; font-weight:700; }
+  .msg.ok { color:var(--ok); } .msg.bad { color:var(--bad); }
+  .hintbox { display:none; margin-top:12px; background:#0b121b; border-left:4px solid var(--cyan); border-radius:8px; padding:10px 12px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:10px 0; }
+  .tile { background:#0b121b; border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center; }
+  .tile .big { font-size:1.6rem; }
+  .vf { display:grid; gap:8px; margin:10px 0; }
+  .vf div { background:#0b121b; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .vf b { color:var(--sol2); }
+  .shake { animation:shake .35s; }
+  @keyframes shake { 25%{transform:translateX(-6px)} 50%{transform:translateX(6px)} 75%{transform:translateX(-4px)} }
+  .wheel { display:grid; grid-template-columns:repeat(13,1fr); gap:3px; font-family:ui-monospace,monospace; font-size:.85rem; margin:10px 0; }
+  .wheel div { background:#0b121b; border:1px solid var(--line); border-radius:6px; text-align:center; padding:3px 0; }
+  .wheel small { display:block; color:var(--cyan); }
+  .final { text-align:center; }
+  .final .t { font-size:3rem; font-weight:800; color:var(--sol2); font-variant-numeric:tabular-nums; }
+  .hidden { display:none; }
+  @media (max-width:520px){ .wheel { grid-template-columns:repeat(7,1fr); } h1{font-size:1.6rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">⚡ ESCAPE 3° AÑO</div>
+    <div class="hud">
+      <div class="pill">Equipo: <b id="hudEquipo">—</b></div>
+      <div class="pill">Tiempo: <b id="hudTiempo">00:00</b></div>
+      <div class="pill">Pistas: <b id="hudPistas">0</b></div>
+    </div>
+  </header>
+
+  <!-- INICIO -->
+  <section id="inicio" class="card">
+    <h1>Apagón en la escuela</h1>
+    <p>Un corte de luz dejó la escuela a oscuras. El único que puede devolver la energía es <b>el panel solar que armó el curso</b>… pero el sistema se bloqueó y pide <b>6 códigos</b> para reactivarse.</p>
+    <p>Cada código que resuelvan carga una barra de la batería. Con las 6 cargadas, la escuela vuelve a tener luz.</p>
+    <p class="muted">Reglas: jueguen en equipo y en una sola compu. Cada pista suma <b>2 minutos</b> de penalidad. Gana el equipo que termine en menos tiempo, pistas incluidas.</p>
+    <label class="muted" for="equipo">Nombre del equipo</label>
+    <input type="text" id="equipo" maxlength="24" placeholder="Ej.: Los Voltios" style="text-transform:none">
+    <div class="row"><button class="go" id="empezar">Empezar ⚡</button></div>
+    <div class="msg bad" id="msgInicio"></div>
+  </section>
+
+  <!-- JUEGO -->
+  <section id="juego" class="hidden">
+    <div class="bat" id="bat"></div>
+    <div class="card" id="reto"></div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="final" class="card final hidden">
+    <h1>¡Volvió la luz! 💡</h1>
+    <p>El equipo <b id="finEquipo"></b> reactivó el panel solar.</p>
+    <div class="t" id="finTiempo"></div>
+    <p class="muted" id="finDetalle"></p>
+    <p id="bonusTxt" style="color:var(--ok);font-weight:700"></p>
+    <div id="btnBonus" class="hidden card" style="background:#0b121b">
+      <p><b>¿Quieren bajar su tiempo?</b> Hay 4 retos bonus. Cada uno que resuelvan le <b>resta 1 minuto</b> a su tiempo final.</p>
+      <button class="go" onclick="empezarBonus()">Jugar los retos bonus ⭐</button>
+    </div>
+    <p>Muéstrenle esta pantalla al profe para que anote su tiempo en el pizarrón.</p>
+  </section>
+</div>
+
+<script>
+/* Las respuestas se guardan codificadas para que no se lean con solo abrir el código. */
+const enc = s => btoa(unescape(encodeURIComponent(s)));
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+
+const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const rueda = abc.map((l,i)=>`<div>${l}<small>${abc[(i+3)%26]}</small></div>`).join('');
+
+const RETOS = [
+  { titulo:'Código 1 · El mensaje secreto',
+    html:`<p>En la pantalla del panel apareció un mensaje cifrado. Quien lo escribió corrió cada letra <b>3 lugares hacia adelante</b> en el abecedario.</p>
+      <div class="code">OD OXC YXHOYH FRQ HO VRO</div>
+      <p>Descifren la <b>última palabra</b> del mensaje.</p>
+      <details><summary class="muted">Ver la rueda de letras (arriba la real, abajo la cifrada)</summary><div class="wheel">${rueda}</div></details>`,
+    r:['LA LUZ VUELVE CON SOL'], pista:'Si la letra cifrada es la de abajo, buscá la de arriba. Por ejemplo: O → L, D → A. Así, «OD» es «LA».' },
+
+  { titulo:'Código 2 · La secuencia',
+    html:`<p>El sistema muestra cuántos paneles se encendieron cada día. Falta el último número:</p>
+      <div class="code">2 · 6 · 12 · 20 · 30 · ?</div>
+      <p>Escriban el número que sigue.</p>`,
+    r:['42'], pista:'Miren cuánto aumenta de un número al siguiente: +4, +6, +8… ¿Cuánto toca sumar ahora?' },
+
+  { titulo:'Código 3 · Cuentas de energía',
+    html:`<p>El panel de la escuela genera <b>300 W</b> cuando le da el sol de lleno. Un día de sol lo tuvo funcionando <b>5 horas</b>.</p>
+      <p>Una notebook gasta <b>50 Wh</b> en una hora de clase.</p>
+      <p>¿Para <b>cuántas horas de notebook</b> alcanza la energía de ese día?</p>`,
+    r:['30'], pista:'Primero calculen la energía del día: potencia × horas = Wh. Después dividan por lo que gasta una notebook en una hora.' },
+
+  { titulo:'Código 4 · Verdadero o falso',
+    html:`<p>Para el código, escriban <b>V</b> o <b>F</b> por cada frase, en orden y todo junto (ejemplo: VFFV).</p>
+      <div class="vf">
+        <div><b>1.</b> El sol es una fuente de energía renovable.</div>
+        <div><b>2.</b> Un panel solar no genera nada en un día nublado.</div>
+        <div><b>3.</b> La energía eólica se obtiene del viento.</div>
+        <div><b>4.</b> Si una app promete duplicar tu plata en una semana, seguro es confiable.</div>
+      </div>`,
+    r:['VFVF'], pista:'Ojo con la 2: con nubes, el panel genera menos, pero ¿genera cero? Y la 4 ya la vieron en el simulador de vida…' },
+
+  { titulo:'Código 5 · Palabras desordenadas',
+    html:`<p>Las letras de estas energías se mezclaron. Ordénenlas y tomen <b>la primera letra</b> de cada palabra, en orden.</p>
+      <div class="grid">
+        <div class="tile"><div class="big">TOVINE</div><span class="muted">mueve los molinos</span></div>
+        <div class="tile"><div class="big">SALO</div><span class="muted">la energía del mar</span></div>
+        <div class="tile"><div class="big">ÑELA</div><span class="muted">se quema en la estufa</span></div>
+        <div class="tile"><div class="big">RRATIE</div><span class="muted">tiene calor adentro</span></div>
+      </div>
+      <p>¿Qué palabra de 4 letras se forma? (Es una unidad eléctrica, en inglés.)</p>`,
+    r:['VOLT'], pista:'La primera es VIENTO y la segunda es OLAS. Ya tienen «VO»… ¿qué se quema en una estufa? ¿Y qué pisamos todos los días?' },
+
+  { titulo:'Código 6 · El acertijo final',
+    html:`<p>Último bloqueo. El sistema hace una pregunta:</p>
+      <div class="code" style="font-size:1.15rem;letter-spacing:1px">Cuanto más hay, menos ves.<br>Llega cuando se va el sol.<br>Hoy la escuela está llena de mí.<br>¿Qué soy?</div>`,
+    r:['OSCURIDAD','LAOSCURIDAD'], pista:'Es lo contrario de lo que están tratando de recuperar: la luz.' },
+];
+
+const BONUS = [
+  { titulo:'Bonus 1 · La pregunta trampa',
+    html:`<p>¿Qué pesa más: <b>un kilo de plumas</b> o <b>un kilo de hierro</b>?</p>
+      <p class="muted">Escriban «plumas», «hierro» o «igual».</p>`,
+    r:['IGUAL','LOMISMO','PESANIGUAL','PESANLOMISMO','NINGUNO','IGUALES'] },
+  { titulo:'Bonus 2 · Paneles y baterías',
+    html:`<p><b>3 paneles</b> cargan <b>3 baterías</b> en <b>3 horas</b>.</p>
+      <p>¿Cuántas horas tardan <b>6 paneles</b> en cargar <b>6 baterías</b>?</p>`,
+    r:['3','TRES'] },
+  { titulo:'Bonus 3 · Otro mensaje cifrado',
+    html:`<p>Mismo truco que el código 1: cada letra corrida 3 lugares.</p>
+      <div class="code">HQHUJLD</div>
+      <p>¿Qué palabra es?</p>`,
+    r:['ENERGIA'] },
+  { titulo:'Bonus 4 · El tren',
+    html:`<p>Un <b>tren eléctrico</b> viaja hacia el norte. El viento sopla hacia el sur.</p>
+      <p>¿Hacia dónde va el humo del tren?</p>`,
+    r:['NINGUNO','NINGUNLADO','NINGUNAPARTE','NOHAYHUMO','NOTIENEHUMO','NOECHAHUMO','NOHAY','NOTIENE','NOLARGAHUMO','NOSALEHUMO','NADA'] },
+];
+
+let paso = 0, pistas = 0, inicio = 0, timer = null, equipo = '';
+let modo = 'main', bpaso = 0, bonus = 0, totalMain = 0, realMain = 0;
+const $ = id => document.getElementById(id);
+
+function bateria(){ $('bat').innerHTML = RETOS.map((_,i)=>`<span class="${i<paso?'on':''}"></span>`).join(''); }
+function fmt(ms){ const s = Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function tick(){ $('hudTiempo').textContent = fmt(Date.now()-inicio + pistas*120000); }
+
+function mostrar(){
+  bateria();
+  const esBonus = modo === 'bonus';
+  const r = esBonus ? BONUS[bpaso] : RETOS[paso];
+  $('reto').innerHTML = `<h2>${r.titulo}</h2>${r.html}
+    <input type="text" id="resp" autocomplete="off" placeholder="Respuesta">
+    <div class="row"><button class="go" id="probar">Probar código</button>${esBonus
+      ? '<button class="hint" id="cortar">Terminar acá</button>'
+      : '<button class="hint" id="verPista">Pista (+2 min)</button>'}</div>
+    <div class="msg" id="msg"></div>
+    ${esBonus ? `<p class="muted">Bonus ${bpaso + 1} de ${BONUS.length} · resueltos: ${bonus} (−${bonus} min)</p>` : `<div class="hintbox" id="hintbox">💡 ${r.pista}</div>`}`;
+  const inp = $('resp'); inp.focus();
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') probar(); });
+  $('probar').onclick = probar;
+  if (esBonus) { $('cortar').onclick = terminarBonus; return; }
+  $('verPista').onclick = () => {
+    if ($('hintbox').style.display === 'block') return;
+    pistas++; $('hudPistas').textContent = pistas; $('hintbox').style.display = 'block'; tick();
+  };
+}
+
+function probar(){
+  const v = enc(norm($('resp').value));
+  const lista = modo === 'bonus' ? BONUS[bpaso] : RETOS[paso];
+  const ok = lista.r.map(x => enc(norm(x))).includes(v);
+  const m = $('msg');
+  if (ok && modo === 'bonus') {
+    m.className = 'msg ok'; m.textContent = '✔ ¡Bonus resuelto! −1 minuto';
+    bonus++; bpaso++;
+    setTimeout(() => bpaso < BONUS.length ? mostrar() : terminarBonus(), 900);
+  } else if (ok) {
+    m.className = 'msg ok'; m.textContent = '✔ Código correcto. Cargando batería…';
+    paso++; bateria();
+    setTimeout(() => paso < RETOS.length ? mostrar() : terminar(), 900);
+  } else {
+    m.className = 'msg bad'; m.textContent = '✖ Código incorrecto. Revisen y vuelvan a probar.';
+    $('reto').classList.remove('shake'); void $('reto').offsetWidth; $('reto').classList.add('shake');
+  }
+}
+
+function terminar(){
+  clearInterval(timer);
+  realMain = Date.now()-inicio; totalMain = realMain + pistas*120000;
+  $('juego').classList.add('hidden'); $('final').classList.remove('hidden');
+  $('finEquipo').textContent = equipo;
+  pintarFinal();
+  $('btnBonus').classList.remove('hidden');
+}
+
+function pintarFinal(){
+  const total = Math.max(0, totalMain - bonus*60000);
+  $('finTiempo').textContent = fmt(total);
+  $('hudTiempo').textContent = fmt(total);
+  $('finDetalle').textContent = `Tiempo jugado: ${fmt(realMain)} · Pistas: ${pistas} (+${pistas*2} min)` +
+    (modo === 'bonus' ? ` · Bonus resueltos: ${bonus} (−${bonus} min)` : '');
+}
+
+function empezarBonus(){
+  modo = 'bonus';
+  $('final').classList.add('hidden'); $('juego').classList.remove('hidden');
+  mostrar();
+}
+
+function terminarBonus(){
+  $('juego').classList.add('hidden'); $('final').classList.remove('hidden');
+  $('btnBonus').classList.add('hidden');
+  $('bonusTxt').textContent = bonus === BONUS.length ? '¡Resolvieron todos los bonus! 🏆' : '';
+  pintarFinal();
+}
+
+$('empezar').onclick = () => {
+  equipo = $('equipo').value.trim();
+  if (!equipo) { $('msgInicio').textContent = 'Pónganle un nombre al equipo para empezar.'; return; }
+  $('hudEquipo').textContent = equipo;
+  $('inicio').classList.add('hidden'); $('juego').classList.remove('hidden');
+  inicio = Date.now(); timer = setInterval(tick, 500); mostrar();
+};
+$('equipo').addEventListener('keydown', e => { if (e.key === 'Enter') $('empezar').click(); });
+window.addEventListener('beforeunload', e => { if (inicio && paso < RETOS.length) { e.preventDefault(); e.returnValue=''; } });
+</script>
+</body>
+</html>
